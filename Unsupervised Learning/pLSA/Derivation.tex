@@ -1,0 +1,85 @@
+\documentclass{paper}
+
+%% Set page size and margins
+\usepackage[a4paper,margin=2cm]{geometry}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{ctex}
+\usepackage{graphicx}
+\usepackage{multicol}
+\usepackage{listings}
+\setlength{\columnsep}{1pt}
+
+%% Set code style
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.96}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\title{Derivation of pLSA}
+\author{CanoY}
+
+\begin{document}
+\maketitle
+Derive the Co-occurrence Model of pLSA using EM algorithm.\\
+\textbf{Prove:}
+    \begin{align*}
+        L&=\prod\limits_{i=1}^M \prod\limits_{j=1}^N P(w_i, d_j)^{n(w_i,d_j)}\\
+        LL&=\sum_i \sum_j n(w_i,d_j)\log P(w_i,d_j)\\
+        &=\sum_i \sum_j n(w_i,d_j)\log \sum\limits_{k=1}^K P(w_i,d_j,z_k)
+    \end{align*}
+\textbf{E step:}
+    \begin{align*}
+        LL&\geq \sum_i \sum_j n(w_i,d_j) \sum_k P^{(t+1)}(z_k\vert w_i,d_j) \log P(w_i,d_j,z_k)\\
+        P^{(t+1)}(z_k\vert w_i,d_j) &= \frac{
+                P^{(t)}(w_i\vert z_k) P^{(t)}(d_j\vert z_k) P^{(t)}(z_k)
+            }{
+                \sum_k P^{(t)}(w_i\vert z_k) P^{(t)}(d_j\vert z_k) P^{(t)}(z_k)
+            }
+    \end{align*}
+\textbf{M step:}
+    \begin{align*}
+        \min\quad&P:=\sum_i \sum_j n(w_i,d_j) \sum_k P^{(t+1)}(z_k\vert w_i,d_j) \log [P(z_k) P(w_i\vert z_k) P(d_j\vert z_k)]\\
+        \text{s.t.}\quad&\sum_i P(w_i\vert z_k)=1,\quad z=1,2,3,\cdots,K\\
+        \quad&\sum_j P(d_j\vert z_k)=1,\quad z=1,2,3,\cdots,K\\
+        \quad&\sum_i P(z_k)=1
+    \end{align*}
+    \begin{align*}
+        \Lambda &= P + \sum_k u_k(\sum_i P(w_i\vert z_k)-1) +
+        \sum_k v_k(\sum_j P(d_j\vert z_k)-1) +
+        \lambda(\sum_k P(z_k)-1)\\
+        \frac{\partial \Lambda}{\partial P(z_k)} &=\frac{\sum_i\sum_j n(w_i,d_j)P^{(t+1)}(z_k\vert w_i,d_j)}{P(z_k)}+\lambda = 0\\
+        & \underline{\Rightarrow P^{(t+1)}(z_k) = \dfrac{R_k}{N_w}}\\
+        & R_k = \sum_i\sum_j n(w_i,d_j)P^{(t+1)}(z_k\vert w_i,d_j), \quad N_w =\sum_i\sum_j n(w_i,d_j)\\
+        \frac{\partial \Lambda}{\partial P(w_i\vert z_k)}&=\frac{\sum_j n(w_i,d_j)P^{(t+1)}(z_k\vert w_i,d_j)}{P(w_i\vert z_k)}+u_k=0\\
+        & \underline{\Rightarrow P^{(t+1)}(w_i\vert z_k) = \dfrac{R_{ik}}{R_k}}\\
+        & R_{ik} = \sum_j n(w_i,d_j)P^{(t+1)}(z_k\vert w_i,d_j)\\
+        \frac{\partial \Lambda}{\partial P(d_j\vert z_k)}&=\frac{\sum_i n(w_i,d_j)P^{(t+1)}(z_k\vert w_i,d_j)}{P(d_j\vert z_k)}+v_k=0\\
+        & \underline{\Rightarrow P^{(t+1)}(w_i\vert z_k) = \dfrac{R_{jk}}{R_k}}\\
+        & R_{jk} = \sum_i n(w_i,d_j)P^{(t+1)}(z_k\vert w_i,d_j)
+    \end{align*}
+\end{document}
