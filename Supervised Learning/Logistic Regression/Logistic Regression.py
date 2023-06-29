@@ -1,25 +1,42 @@
-from math import exp
 import numpy as np
 import matplotlib.pyplot as plt
 
 def sigmoid(x):
     if x>=0:
-        return 1.0/(1+np.exp(-x))
+        return 1/(1+np.exp(-x))
     else:
-        return np.exp(x) / (1 + np.exp(x))
+        return np.exp(x)/(1+np.exp(x))
 
-def LG(x,y, w,a=0.01,tolerence=1e-2):
-    n=y.size
-    yx=(y*x).T
-    steps=np.floor(1/(a*tolerence)).astype(int)
-    for i in range(steps):
-        theta=np.apply_along_axis(lambda ynxn:sigmoid(-w.T@ynxn)*(-ynxn),axis=0,arr=yx)
-        g=theta.sum(axis=1).reshape(2,1)/n
-        w=w-a*g#Fix Steps
-    return w
-
-
+class logreg:
+    def __init__(self,batch=None,lr=1e-2) -> None:
+        self.batch = batch
+        self.lr=lr
+    def fit(self,X,y,iter=1000):
+        if X.shape[0]==y.size:
+            X=X.T
+        w = np.zeros(X.shape[0])
+        _range = range(y.size)
+        for i in range(iter):
+            if self.batch != None:
+                _range = np.random.choice(range(y.size),self.batch)
+            g=0
+            for i in _range:
+                g+=(y[i]*sigmoid(-w@X[:,i])+(1-y[i])*sigmoid(w@X[:,i]))*X[:,i]
+            w=w-self.lr*g#Fix Steps
+        self.w = w
+        return w
+    def eval(self,X):
+        if X.shape[0]==self.w.size:
+            X=X.T
+        tmp = self.w@X.T
+        tmp = tmp.reshape(-1,1)
+        tmp = np.apply_along_axis(sigmoid,1,tmp)
+        tmp = tmp.ravel()
+        return tmp
+    def predict(self,X,thres=0.5):
+        return np.where(self.eval(X)>=thres,1,0)
 if __name__=='__main__':
+    import matplotlib.pyplot as plt
     n=100
     np.random.seed(42)
     
@@ -32,10 +49,10 @@ if __name__=='__main__':
     x=np.array(list(zip(x1,x2)))
     y=np.zeros((n,1))
     y[random2>0]=1#设分界线上方的点标签为1
-    y[random2<0]=-1#设分界线下方的点标签为-1
-    w0=np.array([0,0]).reshape(2,1)
+    y[random2<0]=0#设分界线下方的点标签为0
 
-    w=LG(x,y,w0)
+    model = logreg()
+    w=model.fit(x,y)
     plot_x=np.arange(-100,100,0.1)
     random_divide=plot_x*random1[0]/random1[1]
     result_divide=-1*plot_x*w[0]/w[1]
