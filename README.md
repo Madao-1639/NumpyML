@@ -1,2 +1,2 @@
 # NumpyML
-Implement Machine Learning Algorithms with Numpy only.
+Implementations of classic Machine Learning Algorithms in Numpy.
